@@ -2,10 +2,11 @@
 
 namespace Thenbsp\Wechat\Bridge;
 
-use GuzzleHttp\Client;
+
 use Thenbsp\Wechat\Bridge\Serializer;
 use Thenbsp\Wechat\Wechat\AccessToken;
 use Doctrine\Common\Collections\ArrayCollection;
+use Zan\Framework\Network\Common\HttpClient;
 
 class Http
 {
@@ -115,24 +116,28 @@ class Http
     {
         $options = array();
 
-        // query
-        if( !empty($this->query) ) {
-            $options['query'] = $this->query;
-        }
-
         // body
         if( !empty($this->body) ) {
             $options['body'] = $this->body;
         }
 
+        $client = HttpClient::newInstance();
+
         // ssl cert
         if( $this->sslCert && $this->sslKey ) {
-            $options['cert']    = $this->sslCert;
-            $options['ssl_key'] = $this->sslKey;
+            $options['ssl_cert_file']    = $this->sslCert;
+            $options['ssl_key_file'] = $this->sslKey;
+            $client->set($options);
         }
 
-        $response = (new Client)->request($this->method, $this->uri, $options);
-        $contents = $response->getBody()->getContents();
+
+        if($this->method == 'GET'){
+            $response = (yield $client->get($this->uri,$this->query));
+        }else{
+            $response = (yield $client->post($this->uri,$this->body));
+        }
+
+        $contents = $response->getBody();
 
         if( !$asArray ) {
             return $contents;

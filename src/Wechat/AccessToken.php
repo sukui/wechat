@@ -3,28 +3,29 @@
 namespace Thenbsp\Wechat\Wechat;
 
 use Thenbsp\Wechat\Bridge\Http;
-use Thenbsp\Wechat\Bridge\CacheTrait;
 use Doctrine\Common\Collections\ArrayCollection;
+use ZanPHP\Support\Singleton;
 
 class AccessToken extends ArrayCollection
 {
     /**
      * Cache Trait
      */
-    use CacheTrait;
+    use Singleton;
+
+    private static $_appid;
+    private static $_appsecret;
+
+    private static $_token_info=[];
 
     /**
      * http://mp.weixin.qq.com/wiki/14/9f9c82c1af308e3b14ba9b973f99a8ba.html
      */
     const ACCESS_TOKEN = 'https://api.weixin.qq.com/cgi-bin/token';
 
-    /**
-     * 构造方法
-     */
-    public function __construct($appid, $appsecret)
-    {
-        $this->set('appid',     $appid);
-        $this->set('appsecret', $appsecret);
+    public static function init($appid,$appsecret){
+        static::$_appid = $appid;
+        static::$_appsecret = $appsecret;
     }
 
     /**
@@ -32,20 +33,14 @@ class AccessToken extends ArrayCollection
      */
     public function getTokenString()
     {
-        $cacheId = $this->getCacheId();
-
-        if( $this->cache && $data = $this->cache->fetch($cacheId) ) {
-            return $data['access_token'];
+        if(empty(self::$_token_info)||(time()>=static::$_token_info['expires_time'])){
+            $token = $this->getTokenResponse();
+            $token['expires_time'] = time()+$token['expires_in'];
+            self::$_token_info = $token;
         }
-
-        $response = $this->getTokenResponse();
-
-        if( $this->cache ) {
-            $this->cache->save($cacheId, $response, $response['expires_in']);
-        }
-
-        return $response['access_token'];
+        return static::$_token_info['access_token'];
     }
+
 
     /**
      * 获取 AccessToken（不缓存，返回原始数据）
@@ -54,13 +49,13 @@ class AccessToken extends ArrayCollection
     {
         $query = array(
             'grant_type'    => 'client_credential',
-            'appid'         => $this['appid'],
-            'secret'        => $this['appsecret']
+            'appid'         => self::$_appid,
+            'secret'        => self::$_appsecret
         );
 
-        $response = Http::request('GET', static::ACCESS_TOKEN)
+        $response = (yield Http::request('GET', static::ACCESS_TOKEN)
             ->withQuery($query)
-            ->send();
+            ->send());
 
         if( $response->containsKey('errcode') ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
@@ -74,16 +69,7 @@ class AccessToken extends ArrayCollection
      */
     public function clearFromCache()
     {
-        return $this->cache
-            ? $this->cache->delete($this->getCacheId())
-            : false;
-    }
-
-    /**
-     * 获取缓存 ID
-     */
-    public function getCacheId()
-    {
-        return sprintf('%s_access_token', $this['appid']);
+        self::$_token_info = [];
+        return true;
     }
 }
