@@ -26,7 +26,7 @@ class Temporary
      */
     public function getPayurl()
     {
-        $response = $this->unifiedorder->getResponse();
+        $response = (yield $this->unifiedorder->getResponse());
 
         if( !$response->containsKey('code_url') ) {
             throw new \Exception('Invalid Unifiedorder Response');

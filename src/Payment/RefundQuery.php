@@ -6,12 +6,12 @@ use Thenbsp\Wechat\Bridge\Util;
 use Thenbsp\Wechat\Bridge\Http;
 use Doctrine\Common\Collections\ArrayCollection;
 
-class Query extends ArrayCollection
+class RefundQuery extends ArrayCollection
 {
     /**
      * 订单查询接口
      */
-    const QUERY = 'https://api.mch.weixin.qq.com/pay/orderquery';
+    const QUERY = 'https://api.mch.weixin.qq.com/pay/refundquery';
 
     /**
      * 商户 KEY
@@ -35,6 +35,14 @@ class Query extends ArrayCollection
     public function fromTransactionId($transactionId)
     {
         return $this->doQuery(array('transaction_id'=>$transactionId));
+    }
+
+    /**
+     * 根据 out_trade_no 查询
+     */
+    public function fromOutRefundNo($outRefundNo)
+    {
+        return $this->doQuery(array('out_refund_no'=>$outRefundNo));
     }
 
     /**

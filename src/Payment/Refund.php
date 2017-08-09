@@ -7,12 +7,12 @@ use Thenbsp\Wechat\Bridge\Http;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class Unifiedorder extends ArrayCollection
+class Refund extends ArrayCollection
 {
     /**
      * https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_1
      */
-    const UNIFIEDORDER = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
+    const REFUND = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
 
     /**
      * 商户 KEY
@@ -20,38 +20,30 @@ class Unifiedorder extends ArrayCollection
     protected $key;
 
     /**
-     * 有效的 trade_type 类型
-     */
-    protected $tradeTypes = array('JSAPI', 'NATIVE', 'APP', 'WAP');
-
-    /**
      * 全部选项（不包括 sign）
      */
     protected $defined = array(
-        'appid', 'mch_id', 'device_info', 'nonce_str', 'body',
-        'detail','attach', 'out_trade_no', 'fee_type', 'total_fee',
-        'spbill_create_ip', 'time_start', 'time_expire', 'goods_tag',
-        'notify_url', 'trade_type', 'product_id', 'limit_pay', 'openid'
+        'appid','mch_id','nonce_str','transaction_id','out_trade_no','out_refund_no',
+        'total_fee','refund_fee','refund_fee_type','refund_desc','refund_account'
     );
 
     /**
      * 必填选项（不包括 sign）
      */
     protected $required = array(
-        'appid', 'mch_id', 'nonce_str', 'body', 'out_trade_no',
-        'total_fee', 'spbill_create_ip', 'notify_url', 'trade_type'
+        'appid', 'mch_id', 'nonce_str', 'body', 'out_trade_no','out_refund_no',
+        'total_fee', 'refund_fee'
     );
 
     /**
      * 构造方法
      */
-    public function __construct($appid, $mchid, $key, $remote_ip='0.0.0.0')
+    public function __construct($appid, $mchid, $key)
     {
         $this->key = $key;
 
         $this->set('appid', $appid);
         $this->set('mch_id', $mchid);
-        $this->set('remote_ip', $remote_ip);
     }
 
     /**
@@ -60,6 +52,23 @@ class Unifiedorder extends ArrayCollection
     public function getKey()
     {
         return $this->key;
+    }
+
+    /**
+     * 调置 SSL 证书
+     */
+    public function setSSLCert($sslCert, $sslKey)
+    {
+        if( !file_exists($sslCert) ) {
+            throw new \InvalidArgumentException(sprintf('File "%s" Not Found', $sslCert));
+        }
+
+        if( !file_exists($sslKey) ) {
+            throw new \InvalidArgumentException(sprintf('File "%s" Not Found', $sslKey));
+        }
+
+        $this->sslCert = $sslCert;
+        $this->sslKey  = $sslKey;
     }
 
     /**
@@ -77,7 +86,8 @@ class Unifiedorder extends ArrayCollection
 
         $options['sign'] = $signature;
 
-        $response = (yield Http::request('POST', static::UNIFIEDORDER)
+        $response = (yield Http::request('POST', static::REFUND)
+            ->withSSLCert($this->sslCert, $this->sslKey)
             ->withXmlBody($options)
             ->send());
 
@@ -97,17 +107,8 @@ class Unifiedorder extends ArrayCollection
      */
     public function resolveOptions()
     {
-        $normalizer = function($options, $value) {
-            if( ($value === 'JSAPI') && !isset($options['openid']) ) {
-                throw new \InvalidArgumentException(sprintf(
-                    '订单的 trade_type 为 “%s” 时，必需指定 “openid” 字段', $value));
-            }
-            return $value;
-        };
 
         $defaults = array(
-            'trade_type'        => current($this->tradeTypes),
-            'spbill_create_ip'  => $this->get('remote_ip'),
             'nonce_str'         => Util::getRandomString(),
         );
 
@@ -115,8 +116,6 @@ class Unifiedorder extends ArrayCollection
         $resolver
             ->setDefined($this->defined)
             ->setRequired($this->required)
-            ->setAllowedValues('trade_type', $this->tradeTypes)
-            ->setNormalizer('trade_type', $normalizer)
             ->setDefaults($defaults);
 
         return $resolver->resolve($this->toArray());

@@ -31,15 +31,18 @@ class Sender
      */
     public function send(TemplateInterface $template)
     {
-        $response = Http::request('POST', static::SENDER)
-            ->withAccessToken($this->accessToken)
+
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::SENDER)
+            ->withAccessToken($token)
             ->withBody($template->getRequestBody())
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response['msgid'];
+        yield $response['msgid'];
     }
 }

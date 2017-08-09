@@ -24,11 +24,8 @@ class ForeverCallback extends ArrayCollection
     /**
      * 构造方法
      */
-    public function __construct(Request $request = null)
+    public function __construct($content)
     {
-        $request = $request ?: Request::createFromGlobals();
-        $content = $request->getContent();
-
         try {
             $options = Serializer::parse($content);
         } catch (\InvalidArgumentException $e) {
@@ -49,7 +46,8 @@ class ForeverCallback extends ArrayCollection
             $options['return_msg'] = $message;
         }
 
-        $this->xmlResponse($options);
+        yield Serializer::xmlEncode($options);
+
     }
 
     /**
@@ -59,7 +57,7 @@ class ForeverCallback extends ArrayCollection
     {
         $unifiedorder->set('trade_type', 'NATIVE');
 
-        $response = $unifiedorder->getResponse();
+        $response = (yield $unifiedorder->getResponse());
 
         $options = array(
             'appid'         => $unifiedorder['appid'],
@@ -78,15 +76,7 @@ class ForeverCallback extends ArrayCollection
 
         $options['sign'] = $signature;
 
-        $this->xmlResponse($options);
+        yield Serializer::xmlEncode($options);
     }
 
-    /**
-     * 响应 Xml
-     */
-    protected function xmlResponse(array $options)
-    {
-        $response = new XmlResponse($options);
-        $response->send();
-    }
 }

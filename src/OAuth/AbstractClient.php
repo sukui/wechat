@@ -120,15 +120,15 @@ abstract class AbstractClient
             'grant_type'    => 'authorization_code'
         );
 
-        $response = Http::request('GET', static::ACCESS_TOKEN)
+        $response = (yield Http::request('GET', static::ACCESS_TOKEN)
             ->withQuery($query)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return new AccessToken($this->appid, $response->toArray());
+        yield new AccessToken($this->appid, $response->toArray());
     }
 
     /**

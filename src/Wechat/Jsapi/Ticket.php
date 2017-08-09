@@ -3,15 +3,11 @@
 namespace Thenbsp\Wechat\Wechat\Jsapi;
 
 use Thenbsp\Wechat\Bridge\Http;
-use Thenbsp\Wechat\Bridge\CacheTrait;
 use Thenbsp\Wechat\Wechat\AccessToken;
+use Zan\Framework\Store\Facade\Cache;
 
 class Ticket
 {
-    /**
-     * Cache Trait
-     */
-    use CacheTrait;
 
     /**
      * http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html（附录 1）
@@ -44,19 +40,17 @@ class Ticket
      */
     public function getTicketString()
     {
-        $cacheId = $this->getCacheId();
-
-        if( $this->cache && $data = $this->cache->fetch($cacheId) ) {
-            return $data['ticket'];
+        $ticket = (yield Cache::get("weixin.common.jsapi_ticket",$this->getCacheId()));
+        if(!empty($ticket)){
+            yield $ticket;
+            return;
         }
 
-        $response = $this->getTicketResponse();
+        $response = (yield $this->getTicketResponse());
 
-        if( $this->cache ) {
-            $this->cache->save($cacheId, $response, $response['expires_in']);
-        }
+        Cache::set("weixin.common.jsapi_ticket",$this->getCacheId(),$response['ticket']);
 
-        return $response['ticket'];
+        yield $response['ticket'];
     }
 
     /**
@@ -64,16 +58,16 @@ class Ticket
      */
     public function getTicketResponse()
     {
-        $response = Http::request('GET', static::JSAPI_TICKET)
+        $response = (yield Http::request('GET', static::JSAPI_TICKET)
             ->withAccessToken($this->accessToken)
             ->withQuery(array('type'=>'jsapi'))
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response;
+        yield $response;
     }
 
     /**
@@ -81,9 +75,7 @@ class Ticket
      */
     public function clearFromCache()
     {
-        return $this->cache
-            ? $this->cache->delete($this->getCacheId())
-            : false;
+        yield Cache::del("weixin.common.jsapi_ticket",$this->getCacheId(),$response['ticket']);
     }
 
     /**
@@ -91,6 +83,6 @@ class Ticket
      */
     public function getCacheId()
     {
-        return sprintf('%s_jsapi_ticket', $this->accessToken['appid']);
+        return [AccessToken::$_appid];
     }
 }

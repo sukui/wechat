@@ -4,7 +4,6 @@ namespace Thenbsp\Wechat\Payment;
 
 use Thenbsp\Wechat\Bridge\Serializer;
 use Thenbsp\Wechat\Bridge\XmlResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Collections\ArrayCollection;
 
 class Notify extends ArrayCollection
@@ -22,17 +21,13 @@ class Notify extends ArrayCollection
     /**
      * 构造方法
      */
-    public function __construct(Request $request = null)
+    public function __construct($content = null)
     {
-        $request = $request ?: Request::createFromGlobals();
-        $content = $request->getContent();
-
         try {
             $options = Serializer::parse($content);
         } catch (\InvalidArgumentException $e) {
             $options = array();
         }
-
         parent::__construct($options);
     }
 
@@ -42,12 +37,10 @@ class Notify extends ArrayCollection
     public function fail($message = null)
     {
         $options = array('return_code' => self::FAIL);
-
         if( !is_null($message) ) {
             $options['return_msg'] = $message;
         }
-
-        $this->xmlResponse($options);
+        yield Serializer::xmlEncode($options);
     }
 
     /**
@@ -56,20 +49,10 @@ class Notify extends ArrayCollection
     public function success($message = null)
     {
         $options = array('return_code' => self::SUCCESS);
-
         if( !is_null($message) ) {
             $options['return_msg'] = $message;
         }
-
-        $this->xmlResponse($options);
+        yield Serializer::xmlEncode($options);
     }
 
-    /**
-     * 响应 Xml
-     */
-    protected function xmlResponse(array $options)
-    {
-        $response = new XmlResponse($options);
-        $response->send();
-    }
 }

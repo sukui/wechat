@@ -2,16 +2,11 @@
 
 namespace Thenbsp\Wechat\Wechat;
 
-use Thenbsp\Wechat\Bridge\CacheTrait;
 use Thenbsp\Wechat\Wechat\AccessToken;
 use Thenbsp\Wechat\Wechat\Qrcode\Ticket;
 
 class Qrcode
 {
-    /**
-     * Cache Trait
-     */
-    use CacheTrait;
 
     /**
      * 二维码地址
@@ -34,15 +29,11 @@ class Qrcode
     /**
      * 获取临时二维码
      */
-    public function getTemporary($scene, $expire = 2592000)
+    public function getTemporary($scene)
     {
-        $ticket = new Ticket($this->accessToken, Ticket::QR_SCENE, $scene, $expire);
+        $ticket = new Ticket($this->accessToken, Ticket::QR_SCENE, $scene);
 
-        if( $this->cache ) {
-            $ticket->setCache($this->cache);
-        }
-
-        return $this->getResourceUrl($ticket);
+        yield $this->getResourceUrl($ticket);
     }
 
     /**
@@ -55,12 +46,8 @@ class Qrcode
             : Ticket::QR_LIMIT_STR_SCENE;
 
         $ticket = new Ticket($this->accessToken, $type, $scene);
-        
-        if( $this->cache ) {
-            $ticket->setCache($this->cache);
-        }
 
-        return $this->getResourceUrl($ticket);
+        yield $this->getResourceUrl($ticket);
     }
 
     /**
@@ -68,8 +55,11 @@ class Qrcode
      */
     public function getResourceUrl(Ticket $ticket)
     {
-        $query = array('ticket' => $ticket->getTicketString());
 
-        return static::QRCODE_URL.'?'.http_build_query($query);
+        $ticketStr = (yield $ticket->getTicketString());
+
+        $query = array('ticket' => $ticketStr);
+
+        yield static::QRCODE_URL.'?'.http_build_query($query);
     }
 }

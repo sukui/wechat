@@ -34,15 +34,18 @@ class Group
      */
     public function query()
     {
-        $response = Http::request('GET', static::SELECT)
-            ->withAccessToken($this->accessToken)
-            ->send();
+
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('GET', static::SELECT)
+            ->withAccessToken($token)
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return new ArrayCollection($response['groups']);
+        yield new ArrayCollection($response['groups']);
     }
 
     /**
@@ -54,16 +57,18 @@ class Group
             'group' => array('name'=>$name)
         );
 
-        $response = Http::request('POST', static::CREATE)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::CREATE)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return new ArrayCollection($response['group']);
+        yield new ArrayCollection($response['group']);
     }
 
     /**
@@ -78,16 +83,18 @@ class Group
             )
         );
 
-        $response = Http::request('POST', static::UPDAET)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::UPDAET)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return true;
+        yield true;
     }
 
     /**
@@ -99,16 +106,18 @@ class Group
             'group' => array('id'=>$id)
         );
 
-        $response = Http::request('POST', static::DELETE)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::DELETE)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return true;
+        yield true;
     }
 
     /**
@@ -118,16 +127,18 @@ class Group
     {
         $body = array('openid'=>$openid);
 
-        $response = Http::request('POST', static::QUERY_USER_GROUP)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::QUERY_USER_GROUP)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response['groupid'];
+        yield $response['groupid'];
     }
 
     /**
@@ -145,15 +156,17 @@ class Group
 
         $body = array($key=>$openid, 'to_groupid'=>$newId);
 
-        $response = Http::request('POST', $api)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', $api)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return true;
+        yield true;
     }
 }

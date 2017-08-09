@@ -30,14 +30,15 @@ class Delete
      */
     public function doDelete()
     {
-        $response = Http::request('GET', static::DELETE_URL)
-            ->withAccessToken($this->accessToken)
-            ->send();
+        $token = (yield $this->accessToken->getTokenString());
+        $response = (yield Http::request('GET', static::DELETE_URL)
+            ->withAccessToken($token)
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return true;
+        yield true;
     }
 }

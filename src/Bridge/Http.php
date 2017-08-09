@@ -91,10 +91,9 @@ class Http
     /**
      * Query With AccessToken
      */
-    public function withAccessToken(AccessToken $accessToken)
+    public function withAccessToken($accessToken)
     {
-        $this->query['access_token'] = $accessToken->getTokenString();
-
+        $this->query['access_token'] = $accessToken;
         return $this;
     }
 
@@ -112,7 +111,7 @@ class Http
     /**
      * Send Request
      */
-    public function send($asArray = true)
+    public function send($asArray = true,$timeout=3000)
     {
         $options = array();
 
@@ -132,19 +131,20 @@ class Http
 
 
         if($this->method == 'GET'){
-            $response = (yield $client->get($this->uri,$this->query));
+            $response = (yield $client->getByURL($this->uri,$this->query,$timeout));
         }else{
-            $response = (yield $client->post($this->uri,$this->body));
+            $response = (yield $client->postByURL($this->uri,$this->body,$timeout));
         }
 
         $contents = $response->getBody();
 
         if( !$asArray ) {
-            return $contents;
+            yield $contents;
+            return;
         }
 
         $array = Serializer::parse($contents);
 
-        return new ArrayCollection($array);
+        yield new ArrayCollection($array);
     }
 }

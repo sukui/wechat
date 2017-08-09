@@ -3,16 +3,12 @@
 namespace Thenbsp\Wechat\Wechat\Qrcode;
 
 use Thenbsp\Wechat\Bridge\Http;
-use Thenbsp\Wechat\Bridge\CacheTrait;
 use Thenbsp\Wechat\Wechat\AccessToken;
+use Zan\Framework\Foundation\Core\Config;
+use Zan\Framework\Store\Facade\Cache;
 
 class Ticket
 {
-    /**
-     * Cache Trait
-     */
-    use CacheTrait;
-
     /**
      * http://mp.weixin.qq.com/wiki/18/167e7d94df85d8389df6c94a7a8f78ba.html
      */
@@ -45,15 +41,11 @@ class Ticket
      */
     protected $sceneKey;
 
-    /**
-     * 二维码有效期（临时二维码可用）
-     */
-    protected $expire;
 
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken, $type, $scene, $expire = 2592000)
+    public function __construct(AccessToken $accessToken, $type, $scene)
     {
         $constraint = array(
             static::QR_SCENE            => 'integer',
@@ -77,7 +69,6 @@ class Ticket
         $this->type         = $type;
         $this->scene        = $scene;
         $this->sceneKey     = (is_int($scene) ? 'scene_id' : 'scene_str');
-        $this->expire       = $expire;
         $this->accessToken  = $accessToken;
     }
 
@@ -86,19 +77,30 @@ class Ticket
      */
     public function getTicketString()
     {
-        $cacheId = $this->getCacheId();
-
-        if( $this->cache && $data = $this->cache->fetch($cacheId) ) {
-            return $data['ticket'];
+        if($this->type == self::QR_SCENE){
+            $ticket = (yield Cache::get("weixin.common.qr_temp_ticket",$this->getCacheId()));
+            if(!empty($ticket)){
+                yield $ticket;
+                return;
+            }
+        }else{
+            $ticket = (yield Cache::get("weixin.common.qr_forever_ticket",$this->getCacheId()));
+            if(!empty($ticket)){
+                yield $ticket;
+                return;
+            }
         }
 
-        $response = $this->getTicketResponse();
+        $response = (yield $this->getTicketResponse());
 
-        if( $this->cache ) {
-            $this->cache->save($cacheId, $response, $response['expire_seconds'] ?: 0);
+        if($this->type == self::QR_SCENE){
+            Cache::set("weixin.common.qr_temp_ticket",$this->getCacheId(),$response['ticket']);
+
+        }else{
+            Cache::set("weixin.common.qr_forever_ticket",$this->getCacheId(),$response['ticket']);
         }
 
-        return $response['ticket'];
+        yield $response['ticket'];
     }
 
     /**
@@ -106,16 +108,17 @@ class Ticket
      */
     public function getTicketResponse()
     {
-        $response = Http::request('POST', static::TICKET_URL)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+        $response = (yield Http::request('POST', static::TICKET_URL)
+            ->withAccessToken($token)
             ->withBody($this->getRequestBody())
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response;
+        yield $response;
     }
 
     /**
@@ -142,9 +145,7 @@ class Ticket
      */
     public function clearFromCache()
     {
-        return $this->cache
-            ? $this->cache->delete($this->getCacheId())
-            : false;
+        yield Cache::del("weixin.qr",$this->getCacheId());
     }
 
     /**
@@ -152,6 +153,6 @@ class Ticket
      */
     public function getCacheId()
     {
-        return implode('_', array($this->accessToken['appid'], $this->type, $this->sceneKey, $this->scene));
+        return array(AccessToken::$_appid, $this->type, $this->sceneKey, $this->scene);
     }
 }

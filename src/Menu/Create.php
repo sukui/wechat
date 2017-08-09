@@ -60,16 +60,17 @@ class Create
      */
     public function doCreate()
     {
-        $response = Http::request('POST', static::CREATE_URL)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+        $response = (yield Http::request('POST', static::CREATE_URL)
+            ->withAccessToken($token)
             ->withBody($this->getRequestBody())
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return true;
+        yield true;
     }
 
     /**

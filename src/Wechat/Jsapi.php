@@ -3,17 +3,12 @@
 namespace Thenbsp\Wechat\Wechat;
 
 use Thenbsp\Wechat\Bridge\Util;
-use Thenbsp\Wechat\Bridge\CacheTrait;
 use Thenbsp\Wechat\Bridge\Serializer;
 use Thenbsp\Wechat\Wechat\Jsapi\Ticket;
 use Thenbsp\Wechat\Wechat\AccessToken;
 
 class Jsapi
 {
-    /**
-     * Cache Trait
-     */
-    use CacheTrait;
 
     /**
      * Thenbsp\Wechat\Wechat\AccessToken
@@ -90,12 +85,10 @@ class Jsapi
     {
         $ticket = new Ticket($this->accessToken);
 
-        if( $this->cache ) {
-            $ticket->setCache($this->cache);
-        }
+        $ticketStr = (yield $ticket->getTicketString());
 
         $options = array(
-            'jsapi_ticket'  => $ticket->getTicketString(),
+            'jsapi_ticket'  => $ticketStr,
             'timestamp'     => Util::getTimestamp(),
             'url'           => Util::getCurrentUrl(),
             'noncestr'      => Util::getRandomString(),
@@ -113,14 +106,7 @@ class Jsapi
             'debug'     => (bool) $this->debug
         );
 
-        return $asArray ? $configure : Serializer::jsonEncode($configure);
+        yield $asArray ? $configure : Serializer::jsonEncode($configure);
     }
 
-    /**
-     * 输出对象
-     */
-    public function __toString()
-    {
-        return $this->getConfig();
-    }
 }

@@ -4,28 +4,29 @@ namespace Thenbsp\Wechat\Wechat;
 
 use Thenbsp\Wechat\Bridge\Http;
 use Doctrine\Common\Collections\ArrayCollection;
+use Zan\Framework\Foundation\Core\Config;
+use Zan\Framework\Store\Facade\Cache;
 use ZanPHP\Support\Singleton;
 
 class AccessToken extends ArrayCollection
 {
-    /**
-     * Cache Trait
-     */
     use Singleton;
 
-    private static $_appid;
-    private static $_appsecret;
-
-    private static $_token_info=[];
+    public static $_appid;
+    public static $_appsecret;
 
     /**
      * http://mp.weixin.qq.com/wiki/14/9f9c82c1af308e3b14ba9b973f99a8ba.html
      */
     const ACCESS_TOKEN = 'https://api.weixin.qq.com/cgi-bin/token';
 
-    public static function init($appid,$appsecret){
-        static::$_appid = $appid;
-        static::$_appsecret = $appsecret;
+    public function init(){
+        $config = Config::get('weixin');
+        if(empty($config['appid'])||empty($config['appsecret'])){
+            throw new \InvalidArgumentException("invalid wechat appid or appsecret");
+        }
+        self::$_appid = $config['appid'];
+        self::$_appsecret = $config['appsecret'];
     }
 
     /**
@@ -33,12 +34,20 @@ class AccessToken extends ArrayCollection
      */
     public function getTokenString()
     {
-        if(empty(self::$_token_info)||(time()>=static::$_token_info['expires_time'])){
-            $token = $this->getTokenResponse();
-            $token['expires_time'] = time()+$token['expires_in'];
-            self::$_token_info = $token;
+        if(empty(self::$_appid)){
+            $this->init();
         }
-        return static::$_token_info['access_token'];
+        $result = (yield Cache::get("weixin.token",$this->getCacheId()));
+        if(!empty($result)&&$result=json_decode($result,true)){
+            if(time()<$result['expires_time']){
+                return $result['expires_time'];
+            }
+        }
+        $token = (yield $this->getTokenResponse());
+        $token['expires_time'] = time()+$token['expires_in']-10;
+        $cache = json_encode($token);
+        Cache::set('weixin.token',[self::$_appid],$cache);
+        yield $token['access_token'];
     }
 
 
@@ -47,6 +56,11 @@ class AccessToken extends ArrayCollection
      */
     public function getTokenResponse()
     {
+
+        if(empty(self::$_appid) || empty(self::$_appsecret)){
+            $this->init();
+        }
+
         $query = array(
             'grant_type'    => 'client_credential',
             'appid'         => self::$_appid,
@@ -61,7 +75,7 @@ class AccessToken extends ArrayCollection
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response;
+        yield $response->toArray();
     }
 
     /**
@@ -69,7 +83,13 @@ class AccessToken extends ArrayCollection
      */
     public function clearFromCache()
     {
-        self::$_token_info = [];
-        return true;
+        yield Cache::del("weixin.token",$this->getCacheId());
+    }
+    /**
+     * 获取缓存 ID
+     */
+    public function getCacheId()
+    {
+        return [self::$_appid];
     }
 }

@@ -3,8 +3,8 @@
 namespace Thenbsp\Wechat\User;
 
 use Thenbsp\Wechat\Bridge\Http;
-use Thenbsp\Wechat\Wechat\AccessToken;
 use Doctrine\Common\Collections\ArrayCollection;
+use Thenbsp\Wechat\Wechat\AccessToken;
 
 class User
 {
@@ -44,17 +44,17 @@ class User
         $query = is_null($nextOpenid)
             ? array()
             : array('next_openid'=>$nextOpenid);
-
-        $response = Http::request('GET', static::LISTS)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+        $response = (yield Http::request('GET', static::LISTS)
+            ->withAccessToken($token)
             ->withQuery($query)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response;
+        yield $response;
     }
 
     /**
@@ -67,16 +67,18 @@ class User
             'lang'      => $lang
         );
 
-        $response = Http::request('GET', static::USERINFO)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('GET', static::USERINFO)
+            ->withAccessToken($token)
             ->withQuery($query)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response;
+        yield $response;
     }
 
     /**
@@ -91,15 +93,16 @@ class User
             $body['user_list'][$key]['lang']   = $lang;
         }
 
-        $response = Http::request('POST', static::BETCH)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::BETCH)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
-
         return new ArrayCollection($response['user_info_list']);
     }
 }

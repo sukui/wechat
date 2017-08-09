@@ -60,15 +60,15 @@ class AccessToken extends ArrayCollection
             'lang'          => $lang
         );
 
-        $response = Http::request('GET', static::USERINFO)
+        $response = (yield Http::request('GET', static::USERINFO)
             ->withQuery($query)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        return $response;
+        yield $response;
     }
 
     /**
@@ -82,9 +82,9 @@ class AccessToken extends ArrayCollection
             'refresh_token' => $this['refresh_token']
         );
 
-        $response = Http::request('GET', static::REFRESH)
+        $response = (yield Http::request('GET', static::REFRESH)
             ->withQuery($query)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
@@ -93,7 +93,7 @@ class AccessToken extends ArrayCollection
         // update new access_token from ArrayCollection
         parent::__construct($response->toArray());
 
-        return $this;
+        yield $this;
     }
 
     /**
@@ -106,10 +106,10 @@ class AccessToken extends ArrayCollection
             'openid'        => $this['openid']
         );
 
-        $response = Http::request('GET', static::IS_VALID)
+        $response = (yield Http::request('GET', static::IS_VALID)
             ->withQuery($query)
-            ->send();
+            ->send());
 
-        return ($response['errmsg'] === 'ok');
+        yield ($response['errmsg'] === 'ok');
     }
 }

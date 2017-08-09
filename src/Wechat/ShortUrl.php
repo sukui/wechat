@@ -3,16 +3,10 @@
 namespace Thenbsp\Wechat\Wechat;
 
 use Thenbsp\Wechat\Bridge\Http;
-use Thenbsp\Wechat\Bridge\CacheTrait;
 use Thenbsp\Wechat\Wechat\AccessToken;
 
 class ShortUrl
 {
-    /**
-     * Cache Trait
-     */
-    use CacheTrait;
-
     /**
      * http://mp.weixin.qq.com/wiki/6/856aaeb492026466277ea39233dc23ee.html
      */
@@ -34,32 +28,25 @@ class ShortUrl
     /**
      * 获取短链接
      */
-    public function toShort($longUrl, $cacheLifeTime = 86400)
+    public function toShort($longUrl)
     {
-        $cacheId = md5($longUrl);
-
-        if( $this->cache && $data = $this->cache->fetch($cacheId) ) {
-            return $data;
-        }
 
         $body = array(
             'action'    => 'long2short',
             'long_url'  =>  $longUrl
         );
 
-        $response = Http::request('POST', static::SHORT_URL)
-            ->withAccessToken($this->accessToken)
+        $token = (yield $this->accessToken->getTokenString());
+
+        $response = (yield Http::request('POST', static::SHORT_URL)
+            ->withAccessToken($token)
             ->withBody($body)
-            ->send();
+            ->send());
 
         if( $response['errcode'] != 0 ) {
             throw new \Exception($response['errmsg'], $response['errcode']);
         }
 
-        if( $this->cache ) {
-            $this->cache->save($cacheId, $response['short_url'], $cacheLifeTime);
-        }
-
-        return $response['short_url'];
+        yield $response['short_url'];
     }
 }
