@@ -4,9 +4,7 @@ namespace Thenbsp\Wechat\Payment\Qrcode;
 
 use Thenbsp\Wechat\Bridge\Util;
 use Thenbsp\Wechat\Bridge\Serializer;
-use Thenbsp\Wechat\Bridge\XmlResponse;
 use Thenbsp\Wechat\Payment\Unifiedorder;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Collections\ArrayCollection;
 
 class ForeverCallback extends ArrayCollection

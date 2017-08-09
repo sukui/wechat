@@ -4,7 +4,6 @@ namespace Thenbsp\Wechat\Bridge;
 
 
 use Thenbsp\Wechat\Bridge\Serializer;
-use Thenbsp\Wechat\Wechat\AccessToken;
 use Doctrine\Common\Collections\ArrayCollection;
 use Zan\Framework\Network\Common\HttpClient;
 
