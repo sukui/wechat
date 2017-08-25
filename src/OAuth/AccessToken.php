@@ -46,6 +46,13 @@ class AccessToken extends ArrayCollection
     }
 
     /**
+     * @return mixed|null
+     */
+    public function getOpenid(){
+        return $this->get('openid');
+    }
+
+    /**
      * 获取用户信息
      */
     public function getUser($lang = 'zh_CN')
