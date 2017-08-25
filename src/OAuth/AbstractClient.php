@@ -85,11 +85,10 @@ abstract class AbstractClient
             'redirect_uri'  => $this->redirectUri ?: Util::getCurrentUrl(),
             'response_type' => 'code',
             'scope'         => $this->resolveScope(),
-            'state'         => $this->state,
-            'connect_redirect' => 1
+            'state'         => $this->state
         );
 
-        return $this->resolveAuthorizeUrl().'?'.http_build_query($query);
+        return $this->resolveAuthorizeUrl().'?'.http_build_query($query)."#wechat_redirect";
     }
 
     /**
