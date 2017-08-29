@@ -45,13 +45,11 @@ class Unifiedorder extends ArrayCollection
     /**
      * 构造方法
      */
-    public function __construct($appid, $mchid, $key, $remote_ip='0.0.0.0')
+    public function __construct($appid, $mchid, $key)
     {
         $this->key = $key;
-
         $this->set('appid', $appid);
         $this->set('mch_id', $mchid);
-        $this->set('remote_ip', $remote_ip);
     }
 
     /**
