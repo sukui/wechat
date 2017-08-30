@@ -31,6 +31,18 @@ class Notify extends ArrayCollection
         parent::__construct($options);
     }
 
+
+    public function verifySign($key){
+        $options = $this->toArray();
+        $sign = $options['sign'];
+        unset($options['sign']);
+        // 按 ASCII 码排序
+        ksort($options);
+        $signature = urldecode(http_build_query($options));
+        $signature = strtoupper(md5($signature.'&key='.$key));
+        return $signature == $sign;
+    }
+
     /**
      * 错误响应
      */
