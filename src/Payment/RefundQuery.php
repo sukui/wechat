@@ -20,6 +20,9 @@ class RefundQuery extends ArrayCollection
 
     /**
      * 构造方法
+     * @param $appid
+     * @param $mchid
+     * @param $key
      */
     public function __construct($appid, $mchid, $key)
     {
@@ -31,6 +34,8 @@ class RefundQuery extends ArrayCollection
 
     /**
      * 根据 transaction_id 查询
+     * @param $transactionId
+     * @return \Generator
      */
     public function fromTransactionId($transactionId)
     {
@@ -39,6 +44,8 @@ class RefundQuery extends ArrayCollection
 
     /**
      * 根据 out_trade_no 查询
+     * @param $outRefundNo
+     * @return \Generator
      */
     public function fromOutRefundNo($outRefundNo)
     {
@@ -47,6 +54,8 @@ class RefundQuery extends ArrayCollection
 
     /**
      * 根据 out_trade_no 查询
+     * @param $outTradeNo
+     * @return \Generator
      */
     public function fromOutTradeNo($outTradeNo)
     {
@@ -55,6 +64,9 @@ class RefundQuery extends ArrayCollection
 
     /**
      * 查询订单
+     * @param array $by
+     * @return \Generator
+     * @throws \Exception
      */
     public function doQuery(array $by)
     {

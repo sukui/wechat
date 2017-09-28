@@ -44,8 +44,11 @@ class Ticket
 
     /**
      * 构造方法
+     * @param $accessToken
+     * @param $type
+     * @param $scene
      */
-    public function __construct(AccessToken $accessToken, $type, $scene)
+    public function __construct($accessToken, $type, $scene)
     {
         $constraint = array(
             static::QR_SCENE            => 'integer',
@@ -77,29 +80,7 @@ class Ticket
      */
     public function getTicketString()
     {
-        if($this->type == self::QR_SCENE){
-            $ticket = (yield Cache::get("weixin.common.qr_temp_ticket",$this->getCacheId()));
-            if(!empty($ticket)){
-                yield $ticket;
-                return;
-            }
-        }else{
-            $ticket = (yield Cache::get("weixin.common.qr_forever_ticket",$this->getCacheId()));
-            if(!empty($ticket)){
-                yield $ticket;
-                return;
-            }
-        }
-
         $response = (yield $this->getTicketResponse());
-
-        if($this->type == self::QR_SCENE){
-            Cache::set("weixin.common.qr_temp_ticket",$this->getCacheId(),$response['ticket']);
-
-        }else{
-            Cache::set("weixin.common.qr_forever_ticket",$this->getCacheId(),$response['ticket']);
-        }
-
         yield $response['ticket'];
     }
 
@@ -108,9 +89,8 @@ class Ticket
      */
     public function getTicketResponse()
     {
-        $token = (yield $this->accessToken->getTokenString());
         $response = (yield Http::request('POST', static::TICKET_URL)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($this->getRequestBody())
             ->send());
 
@@ -140,19 +120,4 @@ class Ticket
         return $options;
     }
 
-    /**
-     * 从缓存中清除
-     */
-    public function clearFromCache()
-    {
-        yield Cache::del("weixin.qr",$this->getCacheId());
-    }
-
-    /**
-     * 获取缓存 ID
-     */
-    public function getCacheId()
-    {
-        return array(AccessToken::$_appid, $this->type, $this->sceneKey, $this->scene);
-    }
 }

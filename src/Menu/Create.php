@@ -30,7 +30,7 @@ class Create
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -60,9 +60,8 @@ class Create
      */
     public function doCreate()
     {
-        $token = (yield $this->accessToken->getTokenString());
         $response = (yield Http::request('POST', static::CREATE_URL)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($this->getRequestBody())
             ->send());
 

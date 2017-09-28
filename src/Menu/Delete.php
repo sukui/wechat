@@ -20,7 +20,7 @@ class Delete
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -30,9 +30,8 @@ class Delete
      */
     public function doDelete()
     {
-        $token = (yield $this->accessToken->getTokenString());
         $response = (yield Http::request('GET', static::DELETE_URL)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->send());
 
         if( $response['errcode'] != 0 ) {

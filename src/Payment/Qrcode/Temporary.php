@@ -13,6 +13,7 @@ class Temporary
 
     /**
      * 构造方法
+     * @param Unifiedorder $unifiedorder
      */
     public function __construct(Unifiedorder $unifiedorder)
     {

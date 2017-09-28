@@ -20,8 +20,9 @@ class Qrcode
 
     /**
      * 构造方法
+     * @param $accessToken
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }

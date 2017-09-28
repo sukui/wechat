@@ -15,6 +15,7 @@ class ConfigGenerator
 
     /**
      * 构造方法
+     * @param AccessToken $accessToken
      */
     public function __construct(AccessToken $accessToken)
     {
@@ -23,6 +24,7 @@ class ConfigGenerator
 
     /**
      * 设置用户 AccessToken
+     * @param AccessToken $accessToken
      */
     public function setAccessToken(AccessToken $accessToken)
     {
@@ -35,6 +37,8 @@ class ConfigGenerator
 
     /**
      * 获取配置
+     * @param bool $asArray
+     * @return array
      */
     public function getConfig($asArray = false)
     {

@@ -23,7 +23,7 @@ class ServerIp
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -33,11 +33,9 @@ class ServerIp
      */
     public function getIps($cacheLifeTime = 86400)
     {
-
         if(empty(self::$_ips) || (time()>=self::$_ips['expires_time'])){
-            $token = (yield $this->accessToken->getTokenString());
             $response = (yield Http::request('GET', static::SERVER_IP)
-                ->withAccessToken($token)
+                ->withAccessToken($this->accessToken)
                 ->send());
 
             if( $response->containsKey('errcode') ) {

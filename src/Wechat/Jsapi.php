@@ -40,10 +40,11 @@ class Jsapi
 
     /**
      * 构造方法
+     * @param $token
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($token)
     {
-        $this->accessToken = $accessToken;
+        $this->accessToken = $token;
     }
 
     /**

@@ -35,6 +35,9 @@ class Cash extends ArrayCollection
 
     /**
      * 构造方法
+     * @param $appid
+     * @param $mchid
+     * @param $key
      */
     public function __construct($appid, $mchid, $key)
     {
@@ -46,6 +49,8 @@ class Cash extends ArrayCollection
 
     /**
      * 调置 SSL 证书
+     * @param $sslCert
+     * @param $sslKey
      */
     public function setSSLCert($sslCert, $sslKey)
     {

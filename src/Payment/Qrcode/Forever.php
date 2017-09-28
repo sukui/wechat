@@ -20,6 +20,9 @@ class Forever extends ArrayCollection
 
     /**
      * 构造方法
+     * @param $appid
+     * @param $mchid
+     * @param $key
      */
     public function __construct($appid, $mchid, $key)
     {
@@ -31,6 +34,9 @@ class Forever extends ArrayCollection
 
     /**
      * 获取支付链接
+     * @param $productId
+     * @param array $defaults
+     * @return string
      */
     public function getPayurl($productId, array $defaults = array())
     {

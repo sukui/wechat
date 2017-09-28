@@ -19,14 +19,19 @@ class Remark
 
     /**
      * 构造方法
+     * @param $accessToken
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
 
     /**
      * 设置/更新用户备注
+     * @param $openid
+     * @param $remark
+     * @return \Generator
+     * @throws \Exception
      */
     public function update($openid, $remark)
     {
@@ -35,10 +40,8 @@ class Remark
             'remark'    => $remark
         );
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::REMARK)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 

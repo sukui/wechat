@@ -14,15 +14,16 @@ class Ticket
      */
     const JSAPI_TICKET = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket';
 
-    /**
+    /**`
      * Thenbsp\Wechat\Wechat\AccessToken
      */
     protected $accessToken;
 
     /**
      * 构造方法
+     * @param $accessToken
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -40,16 +41,7 @@ class Ticket
      */
     public function getTicketString()
     {
-        $ticket = (yield Cache::get("weixin.common.jsapi_ticket",$this->getCacheId()));
-        if(!empty($ticket)){
-            yield $ticket;
-            return;
-        }
-
         $response = (yield $this->getTicketResponse());
-
-        Cache::set("weixin.common.jsapi_ticket",$this->getCacheId(),$response['ticket']);
-
         yield $response['ticket'];
     }
 
@@ -68,21 +60,5 @@ class Ticket
         }
 
         yield $response;
-    }
-
-    /**
-     * 从缓存中清除
-     */
-    public function clearFromCache()
-    {
-        yield Cache::del("weixin.common.jsapi_ticket",$this->getCacheId(),$response['ticket']);
-    }
-
-    /**
-     * 获取缓存 ID
-     */
-    public function getCacheId()
-    {
-        return [AccessToken::$_appid];
     }
 }

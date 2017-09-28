@@ -44,6 +44,9 @@ class Unifiedorder extends ArrayCollection
 
     /**
      * 构造方法
+     * @param $appid
+     * @param $mchid
+     * @param $key
      */
     public function __construct($appid, $mchid, $key)
     {

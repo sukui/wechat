@@ -20,7 +20,7 @@ class ShortUrl
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -36,10 +36,8 @@ class ShortUrl
             'long_url'  =>  $longUrl
         );
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::SHORT_URL)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 

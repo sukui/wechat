@@ -23,8 +23,9 @@ class Group
 
     /**
      * 构造方法
+     * @param $accessToken
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -34,11 +35,8 @@ class Group
      */
     public function query()
     {
-
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('GET', static::SELECT)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->send());
 
         if( $response['errcode'] != 0 ) {
@@ -50,6 +48,9 @@ class Group
 
     /**
      * 创建新分组
+     * @param $name
+     * @return \Generator
+     * @throws \Exception
      */
     public function create($name)
     {
@@ -57,10 +58,8 @@ class Group
             'group' => array('name'=>$name)
         );
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::CREATE)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 
@@ -73,6 +72,10 @@ class Group
 
     /**
      * 修改分组名称
+     * @param $id
+     * @param $newName
+     * @return \Generator
+     * @throws \Exception
      */
     public function update($id, $newName)
     {
@@ -83,10 +86,8 @@ class Group
             )
         );
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::UPDAET)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 
@@ -99,6 +100,9 @@ class Group
 
     /**
      * 删除分组
+     * @param $id
+     * @return \Generator
+     * @throws \Exception
      */
     public function delete($id)
     {
@@ -106,10 +110,8 @@ class Group
             'group' => array('id'=>$id)
         );
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::DELETE)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 
@@ -122,15 +124,16 @@ class Group
 
     /**
      * 查询指定用户所在分组
+     * @param $openid
+     * @return \Generator
+     * @throws \Exception
      */
     public function queryUserGroup($openid)
     {
         $body = array('openid'=>$openid);
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::QUERY_USER_GROUP)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 
@@ -143,6 +146,10 @@ class Group
 
     /**
      * 移动用户分组
+     * @param $openid
+     * @param $newId
+     * @return \Generator
+     * @throws \Exception
      */
     public function updateUserGroup($openid, $newId)
     {
@@ -156,10 +163,8 @@ class Group
 
         $body = array($key=>$openid, 'to_groupid'=>$newId);
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', $api)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 

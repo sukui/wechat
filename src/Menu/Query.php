@@ -20,7 +20,7 @@ class Query
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -31,10 +31,8 @@ class Query
     public function doQuery()
     {
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('GET', static::QUERY_URL)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->send());
 
         if( $response['errcode'] != 0 ) {

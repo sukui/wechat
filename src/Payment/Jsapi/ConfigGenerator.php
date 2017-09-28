@@ -11,6 +11,8 @@ abstract class ConfigGenerator extends ArrayCollection
 {
     /**
      * 构造方法
+     * @param Unifiedorder $unifiedorder
+     * @param array $defaults
      */
     public function __construct(Unifiedorder $unifiedorder, array $defaults = array())
     {
@@ -40,6 +42,8 @@ abstract class ConfigGenerator extends ArrayCollection
 
     /**
      * 获取配置
+     * @param bool $asArray
+     * @return
      */
     public function getConfig($asArray = false)
     {

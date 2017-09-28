@@ -30,8 +30,9 @@ class User
 
     /**
      * 构造方法
+     * @param $accessToken
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -44,9 +45,8 @@ class User
         $query = is_null($nextOpenid)
             ? array()
             : array('next_openid'=>$nextOpenid);
-        $token = (yield $this->accessToken->getTokenString());
         $response = (yield Http::request('GET', static::LISTS)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withQuery($query)
             ->send());
 
@@ -67,10 +67,8 @@ class User
             'lang'      => $lang
         );
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('GET', static::USERINFO)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withQuery($query)
             ->send());
 
@@ -93,10 +91,8 @@ class User
             $body['user_list'][$key]['lang']   = $lang;
         }
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::BETCH)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($body)
             ->send());
 

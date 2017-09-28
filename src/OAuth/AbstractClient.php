@@ -40,6 +40,8 @@ abstract class AbstractClient
 
     /**
      * 构造方法
+     * @param $appid
+     * @param $appsecret
      */
     public function __construct($appid, $appsecret)
     {
@@ -49,6 +51,7 @@ abstract class AbstractClient
 
     /**
      * 设置 scope
+     * @param $scope
      */
     public function setScope($scope)
     {
@@ -57,6 +60,7 @@ abstract class AbstractClient
 
     /**
      * 设置 state
+     * @param $state
      */
     public function setState($state)
     {
@@ -65,6 +69,7 @@ abstract class AbstractClient
 
     /**
      * 设置 redirect uri
+     * @param $redirectUri
      */
     public function setRedirectUri($redirectUri)
     {
@@ -93,6 +98,10 @@ abstract class AbstractClient
 
     /**
      * 通过 code 换取 AccessToken
+     * @param $code
+     * @param null $state
+     * @return \Generator
+     * @throws \Exception
      */
     public function getAccessToken($code, $state = null)
     {

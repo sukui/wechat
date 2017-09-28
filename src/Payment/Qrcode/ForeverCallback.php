@@ -21,6 +21,7 @@ class ForeverCallback extends ArrayCollection
 
     /**
      * 构造方法
+     * @param $content
      */
     public function __construct($content)
     {
@@ -35,6 +36,8 @@ class ForeverCallback extends ArrayCollection
 
     /**
      * 错误响应
+     * @param null $message
+     * @return \Generator
      */
     public function fail($message = null)
     {
@@ -50,6 +53,8 @@ class ForeverCallback extends ArrayCollection
 
     /**
      * 成功响应
+     * @param Unifiedorder $unifiedorder
+     * @return \Generator
      */
     public function success(Unifiedorder $unifiedorder)
     {
