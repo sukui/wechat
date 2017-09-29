@@ -5,7 +5,7 @@ namespace Thenbsp\Wechat\Bridge;
 
 use Thenbsp\Wechat\Bridge\Serializer;
 use Doctrine\Common\Collections\ArrayCollection;
-use Zan\Framework\Network\Common\HttpClient;
+use ZanPHP\HttpClient\HttpClient;
 
 class Http
 {
