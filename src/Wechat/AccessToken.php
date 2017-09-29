@@ -32,7 +32,7 @@ class AccessToken extends ArrayCollection
      */
     public function getTokenResponse()
     {
-        if(empty($_appid)||empty($_appsecret)){
+        if(empty(self::$_appid)||empty(self::$_appsecret)){
             throw new \InvalidArgumentException("invalid wechat appid or appsecret");
         }
 
