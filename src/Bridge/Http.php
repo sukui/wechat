@@ -132,6 +132,11 @@ class Http
         if($this->method == 'GET'){
             $response = (yield $client->getByURL($this->uri,$this->query,$timeout));
         }else{
+
+            if(!empty($this->query)){
+                $this->uri .= "?".http_build_query($this->query);
+            }
+
             $response = (yield $client->postByURL($this->uri,$this->body,$timeout));
         }
 
