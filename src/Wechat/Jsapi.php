@@ -5,15 +5,19 @@ namespace Thenbsp\Wechat\Wechat;
 use Thenbsp\Wechat\Bridge\Util;
 use Thenbsp\Wechat\Bridge\Serializer;
 use Thenbsp\Wechat\Wechat\Jsapi\Ticket;
-use Thenbsp\Wechat\Wechat\AccessToken;
 
 class Jsapi
 {
 
     /**
-     * Thenbsp\Wechat\Wechat\AccessToken
+     * AccessToken
      */
     protected $accessToken;
+
+    /**
+     * appId
+     */
+    protected $appId;
 
     /**
      * 是否开起调试
@@ -40,10 +44,12 @@ class Jsapi
 
     /**
      * 构造方法
+     * @param $appId
      * @param $token
      */
-    public function __construct($token)
+    public function __construct($appId, $token)
     {
+        $this->appId = $appId;
         $this->accessToken = $token;
     }
 
@@ -99,7 +105,7 @@ class Jsapi
 
         $signature = sha1(urldecode(http_build_query($options)));
         $configure = array(
-            'appId'     => $this->accessToken['appid'],
+            'appId'     => $this->appId,
             'nonceStr'  => $options['noncestr'],
             'timestamp' => $options['timestamp'],
             'signature' => $signature,
