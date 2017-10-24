@@ -21,7 +21,7 @@ class Sender
     /**
      * 构造方法
      */
-    public function __construct(AccessToken $accessToken)
+    public function __construct($accessToken)
     {
         $this->accessToken = $accessToken;
     }
@@ -32,10 +32,8 @@ class Sender
     public function send(TemplateInterface $template)
     {
 
-        $token = (yield $this->accessToken->getTokenString());
-
         $response = (yield Http::request('POST', static::SENDER)
-            ->withAccessToken($token)
+            ->withAccessToken($this->accessToken)
             ->withBody($template->getRequestBody())
             ->send());
 
