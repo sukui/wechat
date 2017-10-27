@@ -31,7 +31,7 @@ class Refund extends ArrayCollection
      * 必填选项（不包括 sign）
      */
     protected $required = array(
-        'appid', 'mch_id', 'nonce_str', 'body', 'out_trade_no','out_refund_no',
+        'appid', 'mch_id', 'nonce_str', 'out_trade_no','out_refund_no',
         'total_fee', 'refund_fee'
     );
 
