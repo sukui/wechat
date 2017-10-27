@@ -123,7 +123,7 @@ class Http
 
         // ssl cert
         if( $this->sslCert && $this->sslKey ) {
-            $options[' ssl_cert_file']    = $this->sslCert;
+            $options['ssl_cert_file']    = $this->sslCert;
             $options['ssl_key_file'] = $this->sslKey;
             $client->set($options);
         }
